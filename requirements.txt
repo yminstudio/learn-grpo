@@ -1,0 +1,39 @@
+# Step 2: GRPO 기본 예제 실행을 위한 의존성 패키지
+# 작성일: 2025.01.30
+
+# 핵심 라이브러리 (step1 연구 결과 기반)
+torch>=2.0.0
+transformers>=4.36.0
+trl>=0.19.0
+datasets>=2.15.0
+accelerate>=0.24.0
+
+# 추가 유틸리티
+numpy>=1.24.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+
+# 로깅 및 실험 추적
+tensorboard>=2.14.0
+wandb>=0.16.0  # 선택사항
+
+# 개발 및 디버깅
+tqdm>=4.65.0
+colorlog>=6.7.0
+
+# JSON 처리 및 검증
+jsonschema>=4.19.0
+
+# 메모리 최적화 (선택사항)
+psutil>=5.9.0
+
+# GPU 최적화 (CUDA 환경)
+# torch-audio  # 필요시 주석 해제
+# torch-vision  # 필요시 주석 해제
+
+# 참고: 
+# - CUDA 버전에 맞는 PyTorch 설치: https://pytorch.org/get-started/locally/
+# - RTX A6000 환경에서는 CUDA 12.8 호환 버전 사용 권장
+# - 메모리 부족 시 gradient_checkpointing=True 설정 활용 
