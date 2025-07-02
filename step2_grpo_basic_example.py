@@ -51,8 +51,7 @@ class ExperimentConfig:
     max_prompt_length: int = 512
     max_completion_length: int = 256
     learning_rate: float = 1e-6
-    kl_penalty: float = 0.04
-    
+        
     # 훈련 설정
     num_train_epochs: int = 1
     per_device_train_batch_size: int = 1
@@ -181,24 +180,13 @@ def create_fund_evaluation_dataset(num_samples: int = 100) -> Dataset:
     return dataset
 
 def setup_model_and_tokenizer(config: ExperimentConfig):
-    """모델과 토크나이저 설정"""
-    logger.info(f"모델 로딩 시작: {config.model_name}")
+    """
+    모델 설정 (공식 예제에 맞게 단순화)
+    """
+    logger.info(f"모델 로딩: {config.model_name}")
     
-    # 토크나이저 로딩
-    tokenizer = AutoTokenizer.from_pretrained(config.model_name)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    
-    # 모델 로딩 (메모리 효율성을 위한 설정)
-    model = AutoModelForCausalLM.from_pretrained(
-        config.model_name,
-        torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
-        device_map="auto" if torch.cuda.is_available() else None,
-        trust_remote_code=True
-    )
-    
-    logger.info(f"모델 로딩 완료. 파라미터 수: {model.num_parameters():,}")
-    return model, tokenizer
+    # 공식 예제에서는 model name만 필요
+    return config.model_name
 
 def run_grpo_experiment(config: ExperimentConfig):
     """GRPO 실험 실행"""
@@ -208,7 +196,7 @@ def run_grpo_experiment(config: ExperimentConfig):
     set_seed(config.seed)
     
     # 모델 및 토크나이저 설정
-    model, tokenizer = setup_model_and_tokenizer(config)
+    model = setup_model_and_tokenizer(config)
     
     # 데이터셋 생성
     train_dataset = create_fund_evaluation_dataset(config.max_samples)
@@ -220,7 +208,6 @@ def run_grpo_experiment(config: ExperimentConfig):
         max_prompt_length=config.max_prompt_length,
         max_completion_length=config.max_completion_length,
         learning_rate=config.learning_rate,
-        kl_penalty=config.kl_penalty,
         num_train_epochs=config.num_train_epochs,
         per_device_train_batch_size=config.per_device_train_batch_size,
         gradient_accumulation_steps=config.gradient_accumulation_steps,
@@ -233,12 +220,10 @@ def run_grpo_experiment(config: ExperimentConfig):
     logger.info("GRPO 설정 완료:")
     logger.info(f"  - 그룹 크기: {config.num_generations}")
     logger.info(f"  - 학습률: {config.learning_rate}")
-    logger.info(f"  - KL 페널티: {config.kl_penalty}")
     
-    # GRPOTrainer 초기화
+    # GRPOTrainer 초기화 (공식 예제에 맞게)
     trainer = GRPOTrainer(
         model=model,
-        tokenizer=tokenizer,
         args=grpo_config,
         train_dataset=train_dataset,
         reward_funcs=combined_reward_function,
@@ -246,30 +231,9 @@ def run_grpo_experiment(config: ExperimentConfig):
     
     logger.info("GRPOTrainer 초기화 완료")
     
-    # 훈련 전 샘플 생성 테스트
-    logger.info("=== 훈련 전 모델 출력 샘플 ===")
-    test_prompt = "삼성 글로벌 성장주 펀드 (3년 수익률: 12.5%)를 JSON 형식으로 평가하세요:"
-    
-    inputs = tokenizer(test_prompt, return_tensors="pt")
-    if torch.cuda.is_available():
-        inputs = {k: v.cuda() for k, v in inputs.items()}
-    
-    # 샘플 생성
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=100,
-            do_sample=True,
-            temperature=0.7,
-            num_return_sequences=3,
-            pad_token_id=tokenizer.pad_token_id
-        )
-    
-    # 결과 출력
-    for i, output in enumerate(outputs):
-        generated_text = tokenizer.decode(output, skip_special_tokens=True)
-        response = generated_text[len(test_prompt):].strip()
-        logger.info(f"훈련 전 샘플 {i+1}: {response[:100]}...")
+    # GRPOTrainer는 모델을 내부적으로 처리하므로 별도 테스트 생략
+    logger.info("=== GRPO 훈련 준비 완료 ===")
+    logger.info("모델과 tokenizer는 GRPOTrainer 내부에서 자동 처리됩니다.")
     
     # GRPO 훈련 실행
     logger.info("=== GRPO 훈련 시작 ===")
@@ -284,23 +248,9 @@ def run_grpo_experiment(config: ExperimentConfig):
     trainer.save_model()
     logger.info(f"모델 저장 완료: {config.output_dir}")
     
-    # 훈련 후 성능 테스트
-    logger.info("=== 훈련 후 모델 출력 샘플 ===")
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=100,
-            do_sample=True,
-            temperature=0.7,
-            num_return_sequences=3,
-            pad_token_id=tokenizer.pad_token_id
-        )
-    
-    # 결과 비교
-    for i, output in enumerate(outputs):
-        generated_text = tokenizer.decode(output, skip_special_tokens=True)
-        response = generated_text[len(test_prompt):].strip()
-        logger.info(f"훈련 후 샘플 {i+1}: {response[:100]}...")
+    # 훈련 후 성능은 analyze_grpo_performance에서 확인
+    logger.info("=== GRPO 훈련 완료 ===")
+    logger.info("훈련된 모델의 성능은 다음 분석 단계에서 확인됩니다.")
     
     return trainer
 

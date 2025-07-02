@@ -192,3 +192,5 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+step2_grpo_experiment/
+grpo_reward_analysis.png

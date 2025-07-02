@@ -422,9 +422,3 @@ trainer.train()
 - [**DeepSeek R1 스타일 훈련 예제**](https://huggingface.co/learn/cookbook/en/fine_tuning_llm_grpo_trl)
 - [Transformers 라이브러리 문서](https://huggingface.co/docs/transformers/index)
 - [PyTorch 강화학습 튜토리얼](https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)
-
-## 기여 방법
-펀드평가 도메인 전문가 및 강화학습 연구자들의 참여를 환영합니다!
-
-## 라이센스
-MIT License
